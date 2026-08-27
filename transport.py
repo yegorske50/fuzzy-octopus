@@ -20,41 +20,43 @@ clientaddress = isotp.Address(isotp.AddressingMode.Normal_11bits, txid=config.TE
 
 ecuaddress = isotp.Address(isotp.AddressingMode.Normal_11bits, txid=config.ECU_TX_ID, rxid=config.TESTER_TX_ID)
 
+def build_isotp_stack(clientaddress):
+    tpsock = isotp.socket()
+    # tpsock.set_fc_opts(bs=8, stmin=0)
+    # tpsock.set_opts(optflag=None, frame_txtime=None, ext_address=None, txpad=None, rxpad=None, rx_ext_address=None, tx_stmin=None)
+    # tpsock.set_ll_opts(mtu=None, tx_dl=None, tx_flags=None)
 
-tpsock = isotp.socket()
-# tpsock.set_fc_opts(bs=8, stmin=0)
-# tpsock.set_opts(optflag=None, frame_txtime=None, ext_address=None, txpad=None, rxpad=None, rx_ext_address=None, tx_stmin=None)
-# tpsock.set_ll_opts(mtu=None, tx_dl=None, tx_flags=None)
+    isoconn = IsoTPSocketConnection(config.CAN_INTERFACE, clientaddress, tpsock=tpsock)
 
-isoconn = IsoTPSocketConnection(config.CAN_INTERFACE, clientaddress, tpsock=tpsock)
+    udsconfig = dict(udsoncan.configs.default_client_config)
+    # print(udsconfig)
 
-udsconfig = dict(udsoncan.configs.default_client_config)
-# print(udsconfig)
-
-# {
-#   "exception_on_negative_response": true,
-#   "exception_on_invalid_response": true,
-#   "exception_on_unexpected_response": true,
-#   "security_algo": null,
-#   "security_algo_params": null,
-#   "tolerate_zero_padding": true,
-#   "ignore_all_zero_dtc": true,
-#   "dtc_snapshot_did_size": 2,
-#   "server_address_format": null,
-#   "server_memorysize_format": null,
-#   "data_identifiers": {},
-#   "input_output": {},
-#   "request_timeout": 5,
-#   "p2_timeout": 1,
-#   "p2_star_timeout": 5,
-#   "standard_version": 2020,
-#   "use_server_timing": true,
-#   "extended_data_size": null,
-#   "nrc78_callback": null
-# }
+    # {
+    #   "exception_on_negative_response": true,
+    #   "exception_on_invalid_response": true,
+    #   "exception_on_unexpected_response": true,
+    #   "security_algo": null,
+    #   "security_algo_params": null,
+    #   "tolerate_zero_padding": true,
+    #   "ignore_all_zero_dtc": true,
+    #   "dtc_snapshot_did_size": 2,
+    #   "server_address_format": null,
+    #   "server_memorysize_format": null,
+    #   "data_identifiers": {},
+    #   "input_output": {},
+    #   "request_timeout": 5,
+    #   "p2_timeout": 1,
+    #   "p2_star_timeout": 5,
+    #   "standard_version": 2020,
+    #   "use_server_timing": true,
+    #   "extended_data_size": null,
+    #   "nrc78_callback": null
+    # }
 
 
-udsconfig['data_identifiers'] = {DIDS['vin']: RawUTFCodec()}
-udsconfig['p2_timeout'] = 0.5 
-udsconfig['p2_star_timeout'] = 5.0 
-udsconfig['use_server_timing'] = False 
+    udsconfig['data_identifiers'] = {DIDS['vin']: RawUTFCodec()}
+    udsconfig['p2_timeout'] = 0.5 
+    udsconfig['p2_star_timeout'] = 5.0 
+    udsconfig['use_server_timing'] = False
+
+    return isoconn, udsconfig
