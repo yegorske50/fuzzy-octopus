@@ -7,8 +7,8 @@ from udsoncan.connections import IsoTPSocketConnection
 from config import DIDS
 from transport import clientaddress, build_isotp_stack
 
-isoconn, udsconfig = build_isotp_stack(clientaddress)
+def read_did(client, name):
+    did = DIDS[name]
+    response = client.read_data_by_identifier(did)
+    return response.service_data.values[did]
 
-with Client(isoconn, config=udsconfig) as client:
-    response = client.read_data_by_identifier(DIDS['vin'])
-    print(f"{response.service_data.values[DIDS['vin']]}")
