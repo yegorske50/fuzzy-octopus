@@ -53,8 +53,12 @@ def build_isotp_stack(clientaddress):
     #   "nrc78_callback": null
     # }
 
+    did_config = {
+        DIDS['vin']: RawUTFCodec(),
+        DIDS['csr']: RawUTFCodec()
+    }
 
-    udsconfig['data_identifiers'] = {DIDS['vin']: RawUTFCodec()}
+    udsconfig['data_identifiers'] = did_config
     udsconfig['p2_timeout'] = 0.5 
     udsconfig['p2_star_timeout'] = 5.0 
     udsconfig['use_server_timing'] = False

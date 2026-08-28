@@ -7,4 +7,5 @@ ECU_TX_ID = 0x7E8
 
 DIDS = {
     "vin": 0xF190,
+    "csr": 0xF191,
 }

@@ -12,8 +12,14 @@ def flow():
     isoconn, udsconfig = build_isotp_stack(clientaddress)
 
     with Client(isoconn, config=udsconfig) as client:
-        response = udsc.read_did(client, 'vin')
-        print(f"{response}")
+
+        try:
+            response = udsc.read_did(client, 'csr')
+            print(f"{response}")
+        except Exception as e:
+            print(f"Error: {e}")
+
+        # udsc.write_did(client, 'vin', 'NEWVIN1234567890')
 
 
 if __name__ == "__main__":
