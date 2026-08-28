@@ -1,6 +1,12 @@
+ast_serialize==0.8.0
 can-isotp==2.0.7
+librt==0.15.0
+mypy==2.3.1
+mypy_extensions==1.1.0
 packaging==26.3
+pathspec==1.1.1
 python-can==4.6.1
+ruff==0.16.5
 typing_extensions==4.16.0
 udsoncan==1.26.1
 wrapt==1.17.3
