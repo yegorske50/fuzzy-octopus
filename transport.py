@@ -4,7 +4,7 @@ from config import DIDS
 import isotp
 import udsoncan
 import udsoncan.configs
-from udsoncan.client import Client
+# from udsoncan.client import Client
 from udsoncan.connections import IsoTPSocketConnection
 
 class RawUTFCodec(udsoncan.DidCodec):

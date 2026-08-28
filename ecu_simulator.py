@@ -5,8 +5,6 @@ from transport import ecuaddress
 from udsoncan import Response
 import random
 
-DID_VALUE = b"LEARNUDS"
-
 ecu_state = {
     "vin": None,
     "csr": "ccllaajj",
@@ -58,7 +56,7 @@ while True:
             raise SendNegativeResponse(service_id=request[0], nrc=Response.Code.ServiceNotSupported)
     except SendNegativeResponse as e:
         response = bytes([0x7F, e.service_id, e.nrc.value])
-        print(f"-> Sending negative response: {response}")
+        print(f"-> Sending negative response: {response.hex()}")
 
     tpsock.send(response)
     print(f"sending response {response.hex()}")
