@@ -13,13 +13,13 @@ def flow():
 
     with Client(isoconn, config=udsconfig) as client:
 
+        udsc.write_did(client, 'vin', 'NEWVIN1234567890')
+
         try:
             response = udsc.read_did(client, 'csr')
             print(f"{response}")
         except Exception as e:
             print(f"Error: {e}")
-
-        # udsc.write_did(client, 'vin', 'NEWVIN1234567890')
 
 
 if __name__ == "__main__":
