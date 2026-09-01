@@ -28,8 +28,8 @@ def flow(vin):
             return
 
         # try:
-        #     creds = ca_client.get_cert(csr)
-        # except ca_client.CloudApiError as e:
+        #     creds = cloud_client.get_cert(csr)
+        # except cloud_client.CloudApiError as e:
         #     print(f"Cloud API call failed: {e}")
         #     return
 

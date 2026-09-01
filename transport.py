@@ -53,10 +53,8 @@ def build_isotp_stack(clientaddress):
     #   "nrc78_callback": null
     # }
 
-    did_config = {
-        DIDS['vin']: RawUTFCodec(),
-        DIDS['csr']: RawUTFCodec()
-    }
+    # Use the same codec for all configured DIDs
+    did_config = {did: RawUTFCodec() for did in DIDS.values()}
 
     udsconfig['data_identifiers'] = did_config
     udsconfig['p2_timeout'] = 0.5 

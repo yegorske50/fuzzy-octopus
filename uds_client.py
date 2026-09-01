@@ -3,6 +3,7 @@ import udsoncan
 # import udsoncan.configs
 # from udsoncan.client import Client
 # from udsoncan.connections import IsoTPSocketConnection
+from udsoncan import services
 import config
 from config import DIDS
 # from transport import clientaddress, build_isotp_stack
@@ -19,15 +20,15 @@ def write_did(client, name, value):
     client.write_data_by_identifier(did, value)
 
 def enter_extended_session(client):
-    client.change_session(config.SESSION_EXTENDED)
+    client.change_session(services.DiagnosticSessionControl.Session.extendedDiagnosticSession)
 
 def ecu_reset(client):
-    client.ecu_reset(config.RESET_HARD)
+    client.ecu_reset(services.ECUReset.ResetType.hardReset)
     time.sleep(1.0)  
 
 def verify_integrity(client):
     routine_id = config.ROUTINES["verify_certificate_integrity"]
-    client.routine_control(routine_id, udsoncan.RoutineControlType.startRoutine)
+    client.start_routine(routine_id)
 
 def send_tester_present(client):
     client.tester_present()
