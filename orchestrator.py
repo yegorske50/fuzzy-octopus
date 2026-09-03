@@ -22,9 +22,9 @@ class StepFailed(Exception):
     """Signals that a step already reported its own failure and flow() should stop."""
 
 
-def _step(description, fn, *args, errors=ECU_REJECTED, **kwargs):
+def _step(description, fn, errors=ECU_REJECTED):
     try:
-        return fn(*args, **kwargs)
+        return fn()
     except errors as e:
         print(f"{description} failed: {e}")
         raise StepFailed(description) from e
@@ -35,24 +35,26 @@ def flow(vin):
 
     with Client(isoconn, config=udsconfig) as client:
         try:
-            _step("enter extended session", udsc.enter_extended_diagnostic_session, client,
+            _step("enter extended session",
+                  lambda: udsc.enter_extended_diagnostic_session(client),
                   errors=ECU_UNREACHABLE)
 
-            _step("write VIN", udsc.write_did, client, 'vin', vin)
-            csr = _step("read CSR", udsc.read_did, client, 'csr')
+            _step("write VIN", lambda: udsc.write_did(client, 'vin', vin))
+            csr = _step("read CSR", lambda: udsc.read_did(client, 'csr'))
 
             # to be implemented
             creds = cloud_client.get_cert(csr)
 
-            _step("write device ID", udsc.write_did, client, 'device_id', creds['device_id'])
-            _step("write VIN alias", udsc.write_did, client, 'vin_alias', creds['vin_alias'])
-            _step("write device certificate", udsc.write_did, client, 'device_cert', creds['device_cert'])
-            _step("reset ECU", udsc.ecu_reset, client)
+            _step("write device ID", lambda: udsc.write_did(client, 'device_id', creds['device_id']))
+            _step("write VIN alias", lambda: udsc.write_did(client, 'vin_alias', creds['vin_alias']))
+            _step("write device certificate", lambda: udsc.write_did(client, 'device_cert', creds['device_cert']))
+            _step("reset ECU", lambda: udsc.ecu_reset(client))
 
-            _step("reconnect after reset", udsc.enter_extended_diagnostic_session, client,
+            _step("reconnect after reset",
+                  lambda: udsc.enter_extended_diagnostic_session(client),
                   errors=ECU_UNREACHABLE)
 
-            _step("verify certificate integrity", udsc.verify_integrity, client)
+            _step("verify certificate integrity", lambda: udsc.verify_integrity(client))
         except StepFailed:
             return
 
