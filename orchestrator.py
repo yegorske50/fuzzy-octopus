@@ -1,62 +1,59 @@
 # import logging
-import time
 
 import udsoncan
 from udsoncan.client import Client
 
-import config
-import transport
+import cloud_client
 import uds_client as udsc
 from transport import clientaddress, build_isotp_stack
-from utils import retry_until_success, retry_with_backoff
-import cloud_client
 
 # logging.basicConfig(level=logging.INFO)
 # log = logging.getLogger("provision")
+
+# The ECU answered but refused the request.
+ECU_REJECTED = (udsoncan.exceptions.NegativeResponseException,)
+
+# enter_extended_diagnostic_session is wrapped in @retry_until_success(), which
+# raises RuntimeError once it has used up its attempts.
+ECU_UNREACHABLE = (RuntimeError,)
+
+
+class StepFailed(Exception):
+    """Signals that a step already reported its own failure and flow() should stop."""
+
+
+def _step(description, fn, *args, errors=ECU_REJECTED, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except errors as e:
+        print(f"{description} failed: {e}")
+        raise StepFailed(description) from e
 
 
 def flow(vin):
     isoconn, udsconfig = build_isotp_stack(clientaddress)
 
     with Client(isoconn, config=udsconfig) as client:
-
         try:
-            udsc.enter_extended_diagnostic_session(client)
-        except RuntimeError as e:
-            print(f"{e}")
-            return
+            _step("enter extended session", udsc.enter_extended_diagnostic_session, client,
+                  errors=ECU_UNREACHABLE)
 
-        try:
-            udsc.write_did(client, 'vin', vin)
-            csr = udsc.read_did(client, 'csr')
-        except udsoncan.exceptions.NegativeResponseException as e:
-            print(f"ECU rejected programming vin or providing csr: {e}")
-            return
+            _step("write VIN", udsc.write_did, client, 'vin', vin)
+            csr = _step("read CSR", udsc.read_did, client, 'csr')
 
-        # to be implemented
-        creds = cloud_client.get_cert(csr)
+            # to be implemented
+            creds = cloud_client.get_cert(csr)
 
-        try:
-            udsc.write_did(client, 'device_id', creds['device_id'])
-            udsc.write_did(client, 'vin_alias', creds['vin_alias'])
-            udsc.write_did(client, 'device_cert', creds['device_cert'])
-            udsc.ecu_reset(client)
-        except udsoncan.exceptions.NegativeResponseException as e:
-            print(f"ECU rejected credential programming or reset: {e}")
-            return
+            _step("write device ID", udsc.write_did, client, 'device_id', creds['device_id'])
+            _step("write VIN alias", udsc.write_did, client, 'vin_alias', creds['vin_alias'])
+            _step("write device certificate", udsc.write_did, client, 'device_cert', creds['device_cert'])
+            _step("reset ECU", udsc.ecu_reset, client)
 
-        # print("stop here")
+            _step("reconnect after reset", udsc.enter_extended_diagnostic_session, client,
+                  errors=ECU_UNREACHABLE)
 
-        try:
-            udsc.enter_extended_diagnostic_session(client)
-        except RuntimeError as e:
-            print(f"{e}")
-            return
-
-        try:
-            udsc.verify_integrity(client)
-        except udsoncan.exceptions.NegativeResponseException as e:
-            print(f"ECU certificate verification failed: {e}")
+            _step("verify certificate integrity", udsc.verify_integrity, client)
+        except StepFailed:
             return
 
     print("Provisioning complete")
