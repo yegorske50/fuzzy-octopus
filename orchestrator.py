@@ -19,8 +19,14 @@ def flow(vin):
     isoconn, udsconfig = build_isotp_stack(clientaddress)
 
     with Client(isoconn, config=udsconfig) as client:
+
         try:
             udsc.enter_extended_diagnostic_session(client)
+        except RuntimeError as e:
+            print(f"{e}")
+            return
+
+        try:
             udsc.write_did(client, 'vin', vin)
             csr = udsc.read_did(client, 'csr')
         except udsoncan.exceptions.NegativeResponseException as e:
@@ -39,10 +45,10 @@ def flow(vin):
             print(f"ECU rejected credential programming or reset: {e}")
             return
 
-        print("stop here")
+        # print("stop here")
 
         try:
-            retry_until_success(lambda: udsc.enter_extended_diagnostic_session(client))
+            udsc.enter_extended_diagnostic_session(client)
         except RuntimeError as e:
             print(f"{e}")
             return

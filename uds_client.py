@@ -7,6 +7,7 @@ from udsoncan import services
 import config
 from config import DIDS
 # from transport import clientaddress, build_isotp_stack
+from utils import retry_until_success
 
 import time
 
@@ -19,7 +20,7 @@ def write_did(client, name, value):
     did = DIDS[name]
     client.write_data_by_identifier(did, value)
 
-
+@retry_until_success()
 def enter_extended_diagnostic_session(client):
     client.change_session(services.DiagnosticSessionControl.Session.extendedDiagnosticSession)
 
