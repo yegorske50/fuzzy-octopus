@@ -13,3 +13,7 @@ DIDS = {
 ROUTINES = {
     "verify_certificate_integrity": 0x0203,
 }
+
+# ECU simulator config
+
+ECU_REBOOT_TIME = 5.0

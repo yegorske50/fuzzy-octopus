@@ -19,12 +19,14 @@ def write_did(client, name, value):
     did = DIDS[name]
     client.write_data_by_identifier(did, value)
 
+
 def enter_extended_diagnostic_session(client):
     client.change_session(services.DiagnosticSessionControl.Session.extendedDiagnosticSession)
 
 def ecu_reset(client):
     client.ecu_reset(services.ECUReset.ResetType.hardReset)
-    time.sleep(1.0)  
+    time.sleep(config.ECU_REBOOT_TIME)
+    # time.sleep(1.0)  
 
 def verify_integrity(client):
     routine_id = config.ROUTINES["verify_certificate_integrity"]

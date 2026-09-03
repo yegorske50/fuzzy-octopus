@@ -112,7 +112,7 @@ while True:
             raise SendNegativeResponse(service_id=sid, nrc=Response.Code.ServiceNotSupported)
         response = handler(request)
     except SendNegativeResponse as e:
-        response = bytes([0x7F, e.service_id, e.nrc.value])
+        response = bytes([0x7F, e.service_id, int(e.nrc)])
         print(f"-> Sending negative response: {response.hex()}")
 
     tpsock.send(response)
@@ -121,6 +121,14 @@ while True:
 
     if sid == 0x11 and response[0] != 0x7F:
         ecu_state["session"] = services.DiagnosticSessionControl.Session.defaultSession
-        print("Simulating ECU reboot (5s)...")
-        time.sleep(5)
+
+        time.sleep(0.1) 
+        tpsock.close()
+
+        print(f"Simulating ECU reboot ({config.ECU_REBOOT_TIME}s)...")
+        time.sleep(config.ECU_REBOOT_TIME)
+
+        tpsock = isotp.socket()
+        tpsock.bind(config.CAN_INTERFACE, ecuaddress)
+
         print("ECU back online") 

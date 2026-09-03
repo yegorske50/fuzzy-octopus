@@ -39,6 +39,8 @@ def flow(vin):
             print(f"ECU rejected credential programming or reset: {e}")
             return
 
+        print("stop here")
+
         try:
             retry_until_success(lambda: udsc.enter_extended_diagnostic_session(client))
         except RuntimeError as e:
