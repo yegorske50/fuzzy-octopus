@@ -19,7 +19,7 @@ def write_did(client, name, value):
     did = DIDS[name]
     client.write_data_by_identifier(did, value)
 
-def enter_extended_session(client):
+def enter_extended_diagnostic_session(client):
     client.change_session(services.DiagnosticSessionControl.Session.extendedDiagnosticSession)
 
 def ecu_reset(client):

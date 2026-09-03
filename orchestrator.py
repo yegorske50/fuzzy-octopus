@@ -20,19 +20,14 @@ def flow(vin):
 
     with Client(isoconn, config=udsconfig) as client:
         try:
-            udsc.enter_extended_session(client)
+            udsc.enter_extended_diagnostic_session(client)
             udsc.write_did(client, 'vin', vin)
             csr = udsc.read_did(client, 'csr')
         except udsoncan.exceptions.NegativeResponseException as e:
             print(f"ECU rejected programming vin or providing csr: {e}")
             return
 
-        # try:
-        #     creds = cloud_client.get_cert(csr)
-        # except cloud_client.CloudApiError as e:
-        #     print(f"Cloud API call failed: {e}")
-        #     return
-
+        # to be implemented
         creds = cloud_client.get_cert(csr)
 
         try:
@@ -45,7 +40,7 @@ def flow(vin):
             return
 
         try:
-            retry_until_success(lambda: udsc.enter_extended_session(client))
+            retry_until_success(lambda: udsc.enter_extended_diagnostic_session(client))
         except RuntimeError as e:
             print(f"{e}")
             return
@@ -60,4 +55,4 @@ def flow(vin):
 
 
 if __name__ == "__main__":
-    flow("NEWVIN1234567890")
+    flow("J7V737UBEJ6E6LNRJ")

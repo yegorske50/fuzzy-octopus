@@ -1,3 +1,4 @@
+# placeholder for cloud interaction
 def get_cert(csr):
     
     return {

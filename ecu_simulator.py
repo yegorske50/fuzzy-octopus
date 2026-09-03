@@ -12,7 +12,11 @@ DID_NAMES = {did: name for name, did in DIDS.items()}
 
 ecu_state = {
     "vin": None,
-    "csr": "ccllaajj",
+    "csr": None,
+    "device_id": None,
+    "vin_alias": None,
+    "device_cert": None,
+    "session": services.DiagnosticSessionControl.Session.defaultSession,
 }
 
 class SendNegativeResponse(Exception):
@@ -25,7 +29,7 @@ def generate_csr(vin):
     length = random.randint(600, 900)
     return "CSR-FOR-" + vin + "-" + ("A" * length)
 
-####################### Utilities ##############################
+####################### Actions ##############################
 
 def read_did(request):
     did = int.from_bytes(request[1:3], "big")
@@ -61,8 +65,9 @@ def session_control(request):
     return bytes([0x50, session_type, 0x01, 0xF4, 0x01, 0xF4]) # p2(500ms) and p2*(5s - since it is in terms of 10ms) of server.
 
 def tester_present(request):
-    if request[1] == 0x80:
-        return None
+    # to implement when no reponse is handled in the main loop
+    # if request[1] == 0x80:
+    #     return None
     return bytes([0x7E, request[1]])
 
 def ecu_reset(request):
@@ -76,10 +81,12 @@ def routine_control(request):
     routine_id = int.from_bytes(request[2:4], "big")
     if routine_id != config.ROUTINES["verify_certificate_integrity"]:
         raise SendNegativeResponse(service_id=0x31, nrc=Response.Code.RequestOutOfRange)
+    # do nothing currently, just return positive response
     return bytes([0x71, control_type]) + request[2:4]
 
 #####################################################
 
+# sid and function mapping
 DISPATCH = {
     0x22: read_did,
     0x2E: write_did,
